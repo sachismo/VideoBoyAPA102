@@ -27,6 +27,7 @@ class VideoBoy
     void PixelTest(int);
     void printGamma();
     void WhiteBalance(int, int, int);
+
    
 
 
@@ -52,6 +53,7 @@ class VideoBoy
     uint8_t Cal_Red;
     uint8_t Cal_Green;
     uint8_t Cal_Blue;
+    uint8_t Cal_Threshold;
 
 
 };

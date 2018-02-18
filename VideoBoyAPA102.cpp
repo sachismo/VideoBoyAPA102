@@ -33,7 +33,7 @@ VideoBoy::VideoBoy(int numLeds, float videoGamma, float brightMAX)
  Cal_Red  =255;
  Cal_Green=255;
  Cal_Blue =255;
-
+ Cal_Threshold=0;
 for (int i=0; i < 256; i++)  
 { 
  gammaTable8[i]  = (int)(pow((float)i / 255.0, videoGamma) * brightMAX  + 0.5); 
@@ -97,14 +97,20 @@ delay(500);
 
 
 
-void VideoBoy::Show(Pixels PixInput[])  //13bit pixels -- uses 13bit gamma curve with 8bit RGB values + 5bit brightness per pixel
+void VideoBoy::Show(Pixels PixInput[])  //13bit pixels -- uses 13bit gamma curve and color correction --> sends 8 bit color + 5bit brightness per pixel
 {
 
 for ( int i=0; i < LEDLength; i++ )   //set gammaTable values
- { 
- 	LEDs13[3*i]   = ( gammaTable13[PixInput[i].b]*(Cal_Blue /255.0) ); 
- 	LEDs13[3*i+1] = ( gammaTable13[PixInput[i].g]*(Cal_Green /255.0) ); 
- 	LEDs13[3*i+2] = ( gammaTable13[PixInput[i].r]*(Cal_Red /255.0) ); 
+ {  	
+ 	 LEDs13[3*i]   = gammaTable13[PixInput[i].b];
+  if(LEDs13[3*i]>Cal_Threshold)  LEDs13[3*i]   =    max(1, ( LEDs13[3*i]*(Cal_Blue /255.0) ) ); 
+
+ 	 LEDs13[3*i+1]   = gammaTable13[PixInput[i].g];
+  if(LEDs13[3*i+1]>Cal_Threshold)  LEDs13[3*i+1]   = max(1, ( LEDs13[3*i+1]*(Cal_Green /255.0) ) ); 
+
+   	 LEDs13[3*i+2]   = gammaTable13[PixInput[i].r];
+  if(LEDs13[3*i+2]>Cal_Threshold)  LEDs13[3*i+2]   = max(1, ( LEDs13[3*i+2]*(Cal_Red /255.0) ) ); 
+
  	  }
 
 for ( int i=0; i < LEDLength; i++)  //set apa102 bright levels
@@ -130,15 +136,15 @@ SPISend();
 
 
 
-void VideoBoy::Show8bit(Pixels PixInput[]) //8bit pixels  -- uses 8bit gamma curve with brightness always at full
+void VideoBoy::Show8bit(Pixels PixInput[]) //8bit pixels  -- uses 8bit gamma curve and color correction with pixel brightness always at full
 {
 
   for( int i=0; i<LEDLength; i++ )
   {
     LED_Data[i*bytesPerLED] = 255;
-    LED_Data[i*bytesPerLED+1] = gammaTable8[PixInput[i].b];
-    LED_Data[i*bytesPerLED+2] = gammaTable8[PixInput[i].g];
-    LED_Data[i*bytesPerLED+3] = gammaTable8[PixInput[i].r];
+    LED_Data[i*bytesPerLED+1] = gammaTable8[PixInput[i].b]*(Cal_Blue /255.0);
+    LED_Data[i*bytesPerLED+2] = gammaTable8[PixInput[i].g]*(Cal_Green /255.0);
+    LED_Data[i*bytesPerLED+3] = gammaTable8[PixInput[i].r]*(Cal_Red /255.0);
   }
         
 SPISend();
