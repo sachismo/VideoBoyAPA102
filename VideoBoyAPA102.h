@@ -19,6 +19,7 @@ class VideoBoy
   public:
    
    VideoBoy(int, float, float);
+    void Begin();
     void TestLEDs(); 
     void RGBBoys(byte, byte, byte);
     void Show(Pixels[]);

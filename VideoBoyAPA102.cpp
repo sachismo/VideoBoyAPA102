@@ -38,8 +38,7 @@ VideoBoy::VideoBoy(int numLeds, float videoGamma, float brightMAX)
  brightLevel = (byte*)malloc(numLeds); 
 
 
-// ledIndex=0;
-// brightLevel[1] = 1;
+ 
 
 
 for (int i=0; i < 256; i++)  
@@ -56,6 +55,8 @@ for (int i=0; i < 256; i++)
 
 
  }
+
+
 
 void VideoBoy::WhiteBalance(int R, int G, int B)
 {
@@ -75,6 +76,7 @@ void VideoBoy::SPISend()
 
 {    SPI.transfer16(0x00); //frame Start bits
      SPI.transfer16(0x00); 
+
 
     for(int i=0; i < frameLength; i++)
     {
