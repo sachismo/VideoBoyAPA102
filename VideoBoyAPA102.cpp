@@ -10,7 +10,6 @@
 VideoBoy::VideoBoy(int numLeds, float videoGamma, float brightMAX) 
  {
 
-
  	
   SPI.begin();
   SPI.setBitOrder(MSBFIRST);
@@ -26,37 +25,20 @@ VideoBoy::VideoBoy(int numLeds, float videoGamma, float brightMAX)
  LED_Data = (byte*)malloc(frameLength);
  LEDs13 = (uint16_t*)malloc(numLeds*6);
  
- gammaTable8R =   (uint8_t*)malloc(256);
- //gammaTable8G =   (uint8_t*)malloc(256);
- //gammaTable8B =   (uint8_t*)malloc(256);
-
- gammaTable13R  = (uint16_t*)malloc(256*2);
- //gammaTable13G  = (uint16_t*)malloc(256*2);
- //gammaTable13B  = (uint16_t*)malloc(256*2);
-
+ gammaTable8  = (uint8_t*)malloc(256);
+ gammaTable13 = (uint16_t*)malloc(256*2);
 
  brightLevel = (uint8_t*)malloc(numLeds); 
 
- Cal_Red=255;
-  Cal_Green=255;
-   Cal_Blue=255;
-
-
- 
-
+ Cal_Red  =255;
+ Cal_Green=255;
+ Cal_Blue =255;
 
 for (int i=0; i < 256; i++)  
 { 
- gammaTable8R[i]  = (int)(pow((float)i / 255.0, videoGamma) * brightMAX  + 0.5); 
- //gammaTable8G[i]  = (int)(pow((float)i / 255.0, videoGamma) * brightMAX  + 0.5); 
- //gammaTable8B[i]  = (int)(pow((float)i / 255.0, videoGamma) * brightMAX  + 0.5); 
-
- gammaTable13R[i] = (int)(pow((float)i / 255.0, videoGamma) * 31*brightMAX + 0.5); 
- //gammaTable13G[i] = (int)(pow((float)i / 255.0, videoGamma) * 31*brightMAX + 0.5);
- //gammaTable13B[i] = (int)(pow((float)i / 255.0, videoGamma) * 31*brightMAX + 0.5);
+ gammaTable8[i]  = (int)(pow((float)i / 255.0, videoGamma) * brightMAX  + 0.5); 
+ gammaTable13[i] = (int)(pow((float)i / 255.0, videoGamma) * 31*brightMAX + 0.5); 
 }
-
-
 
  }
 
@@ -67,19 +49,9 @@ void VideoBoy::WhiteBalance(int R, int G, int B)
  Cal_Red   =R;
  Cal_Green =G;
  Cal_Blue  =B;
-
-//for (int i=0; i < 256; i++) 
-//{
-//  gammaTable8R[i]= (gammaTable8R[i]*R) / 255.0;
- // gammaTable8G[i]= (gammaTable8R[i]*G) / 255.0;
- // gammaTable8B[i]= (gammaTable8R[i]*B) / 255.0;
-
- // gammaTable13R[i]= (gammaTable13R[i]*R) / 255.0;
- // gammaTable13G[i]= (gammaTable13G[i]*G) / 255.0;
- // gammaTable13B[i]= (gammaTable13B[i]*B) / 255.0;
-//}
-
 }
+
+
 void VideoBoy::SPISend()
 
 {    SPI.transfer16(0x00); //frame Start bits
@@ -92,7 +64,8 @@ void VideoBoy::SPISend()
     } 
 }
 
-void VideoBoy::RGBBoys(byte R, byte G, byte B)
+
+void VideoBoy::RGBShow(byte R, byte G, byte B) //show all LEDs in Raw RGB Values
 {
   for(int i=0; i < LEDLength; i++)
   {
@@ -104,17 +77,20 @@ void VideoBoy::RGBBoys(byte R, byte G, byte B)
 
    SPISend();
 }
+
+
+
 void VideoBoy::TestLEDs()
 
 {
 
-RGBBoys(255,0,0);
+RGBShow(255,0,0);
 delay(500);
 
-RGBBoys(0,255,0);
+RGBShow(0,255,0);
 delay(500);
 
-RGBBoys(0,0,255);
+RGBShow(0,0,255);
 delay(500);
 
 }
@@ -126,9 +102,9 @@ void VideoBoy::Show(Pixels PixInput[])  //13bit pixels -- uses 13bit gamma curve
 
 for ( int i=0; i < LEDLength; i++ )   //set gammaTable values
  { 
- 	LEDs13[3*i]   = ( gammaTable13R[PixInput[i].b]*(Cal_Blue /255.0) ); 
- 	LEDs13[3*i+1] = ( gammaTable13R[PixInput[i].g]*(Cal_Green /255.0) ); 
- 	LEDs13[3*i+2] = ( gammaTable13R[PixInput[i].r]*(Cal_Red /255.0) ); 
+ 	LEDs13[3*i]   = ( gammaTable13[PixInput[i].b]*(Cal_Blue /255.0) ); 
+ 	LEDs13[3*i+1] = ( gammaTable13[PixInput[i].g]*(Cal_Green /255.0) ); 
+ 	LEDs13[3*i+2] = ( gammaTable13[PixInput[i].r]*(Cal_Red /255.0) ); 
  	  }
 
 for ( int i=0; i < LEDLength; i++)  //set apa102 bright levels
@@ -152,36 +128,7 @@ for (int i=0; i < LEDLength; i++) // Set pixels
 SPISend();
 }
 
-void VideoBoy::ShowLive(Pixels PixInput[])  //13bit pixels -- uses 13bit gamma curve with 8bit RGB values + 5bit brightness per pixel
-{
 
-for ( int i=0; i < LEDLength; i++ )   //set gammaTable values
- { 
- 	LEDs13[3*i]   = (int)(pow((float)PixInput[i].b / 255.0, 2.4) * (31*255)  + 0.5); 
- 	LEDs13[3*i+1] = (int)(pow((float)PixInput[i].g / 255.0, 2.4) * (31*255)  + 0.5); 
- 	LEDs13[3*i+2] = (int)(pow((float)PixInput[i].r / 255.0, 2.4) * (31*255)  + 0.5); 
- 	  }
-
-for ( int i=0; i < LEDLength; i++)  //set apa102 bright levels
-{ 
- maxColor = max( LEDs13[3*i] , LEDs13[3*i+1]);
- 	maxColor = max( maxColor, LEDs13[3*i+2]); 
-
- 	 brightLevel[i] = 1;
-
- while(255*brightLevel[i] < maxColor) 
-brightLevel[i]++;
- }
-
-for (int i=0; i < LEDLength; i++) // Set pixels
-{ LED_Data[i*bytesPerLED]    =  0xE0 | brightLevel[i] ; // set first 3 bits high for APA protocol + 5 bit brightness level per pixel
-  LED_Data[i*bytesPerLED+1]  =  ( LEDs13[3*i]  +  (brightLevel[i] / 2) ) / brightLevel[i];   //blue
-  LED_Data[i*bytesPerLED+2]  =  ( LEDs13[3*i+1]  +  (brightLevel[i] / 2) ) / brightLevel[i];   //greeen
-  LED_Data[i*bytesPerLED+3]  =  ( LEDs13[3*i+2] +  (brightLevel[i] / 2) ) / brightLevel[i];     //red
- } 
- 
-SPISend();
-}
 
 void VideoBoy::Show8bit(Pixels PixInput[]) //8bit pixels  -- uses 8bit gamma curve with brightness always at full
 {
@@ -189,15 +136,15 @@ void VideoBoy::Show8bit(Pixels PixInput[]) //8bit pixels  -- uses 8bit gamma cur
   for( int i=0; i<LEDLength; i++ )
   {
     LED_Data[i*bytesPerLED] = 255;
-    LED_Data[i*bytesPerLED+1] = gammaTable8B[PixInput[i].b];
-    LED_Data[i*bytesPerLED+2] = gammaTable8G[PixInput[i].g];
-    LED_Data[i*bytesPerLED+3] = gammaTable8R[PixInput[i].r];
+    LED_Data[i*bytesPerLED+1] = gammaTable8[PixInput[i].b];
+    LED_Data[i*bytesPerLED+2] = gammaTable8[PixInput[i].g];
+    LED_Data[i*bytesPerLED+3] = gammaTable8[PixInput[i].r];
   }
         
 SPISend();
 }
 
-void VideoBoy::PixelTest(int Seconds)
+void VideoBoy::PixelTest(int Seconds)  //Scan white pixel through all leds in (x) seconds
 {
 	int delayTime = (Seconds*1000)/LEDLength;
 
@@ -237,9 +184,9 @@ void VideoBoy::printGamma()
     Serial.print(i);
     Serial.print("] ");
     Serial.print("13bit=");
-    Serial.print(gammaTable13R[i]);
+    Serial.print(gammaTable13[i]);
     Serial.print("  8bit=");
-    Serial.println(gammaTable8R[i]);
+    Serial.println(gammaTable8[i]);
     delay(1);
   }
 }

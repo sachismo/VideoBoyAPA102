@@ -21,9 +21,8 @@ class VideoBoy
    VideoBoy(int, float, float);
     void Begin();
     void TestLEDs(); 
-    void RGBBoys(byte, byte, byte);
+    void RGBShow(byte, byte, byte);
     void Show(Pixels[]);
-    void ShowLive(Pixels[]);
     void Show8bit(Pixels[]);
     void PixelTest(int);
     void printGamma();
@@ -44,14 +43,9 @@ class VideoBoy
     uint8_t* LED_Data;
     uint16_t* LEDs13;
 
-    uint8_t* gammaTable8R;
-    uint8_t* gammaTable8G;
-    uint8_t* gammaTable8B;
-
-    uint16_t* gammaTable13R;
-    uint16_t* gammaTable13G;
-    uint16_t* gammaTable13B;
-
+    uint8_t* gammaTable8;
+    uint16_t* gammaTable13;
+ 
     uint8_t* brightLevel;
     uint16_t maxColor;
 
