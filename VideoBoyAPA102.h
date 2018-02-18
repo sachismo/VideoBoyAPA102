@@ -7,9 +7,9 @@
 
 
 struct Pixels {
-  byte r;
-  byte g;
-  byte b;  
+  uint16_t r;
+  uint16_t g;
+  uint16_t b;  
 };
 
 //void SPISend();
@@ -23,6 +23,7 @@ class VideoBoy
     void TestLEDs(); 
     void RGBBoys(byte, byte, byte);
     void Show(Pixels[]);
+    void ShowLive(Pixels[]);
     void Show8bit(Pixels[]);
     void PixelTest(int);
     void printGamma();
@@ -53,6 +54,10 @@ class VideoBoy
 
     uint8_t* brightLevel;
     uint16_t maxColor;
+
+    uint8_t Cal_Red;
+    uint8_t Cal_Green;
+    uint8_t Cal_Blue;
 
 
 };
