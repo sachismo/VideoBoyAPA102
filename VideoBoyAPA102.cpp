@@ -95,6 +95,14 @@ delay(500);
 
 }
 
+int VideoBoyMax(int constraint, int value)
+{
+	if(value < constraint)
+		return constraint;
+
+	return value;
+}
+
 
 
 void VideoBoy::Show(Pixels PixInput[])  //13bit pixels -- uses 13bit gamma curve and color correction --> sends 8 bit color + 5bit brightness per pixel
@@ -103,20 +111,20 @@ void VideoBoy::Show(Pixels PixInput[])  //13bit pixels -- uses 13bit gamma curve
 for ( int i=0; i < LEDLength; i++ )   //set gammaTable values
  {  	
  	 LEDs13[3*i]   = gammaTable13[PixInput[i].b];
-  if(LEDs13[3*i]>Cal_Threshold)  LEDs13[3*i]   =    max(1, ( LEDs13[3*i]*(Cal_Blue /255.0) ) ); 
+  if(LEDs13[3*i]>Cal_Threshold)  LEDs13[3*i]   =    VideoBoyMax(1, LEDs13[3*i]*(Cal_Blue /255.0) );
 
  	 LEDs13[3*i+1]   = gammaTable13[PixInput[i].g];
-  if(LEDs13[3*i+1]>Cal_Threshold)  LEDs13[3*i+1]   = max(1, ( LEDs13[3*i+1]*(Cal_Green /255.0) ) ); 
+  if(LEDs13[3*i+1]>Cal_Threshold)  LEDs13[3*i+1]   = VideoBoyMax(1, ( LEDs13[3*i+1]*(Cal_Green /255.0) ) ); 
 
    	 LEDs13[3*i+2]   = gammaTable13[PixInput[i].r];
-  if(LEDs13[3*i+2]>Cal_Threshold)  LEDs13[3*i+2]   = max(1, ( LEDs13[3*i+2]*(Cal_Red /255.0) ) ); 
+  if(LEDs13[3*i+2]>Cal_Threshold)  LEDs13[3*i+2]   = VideoBoyMax(1, ( LEDs13[3*i+2]*(Cal_Red /255.0) ) ); 
 
  	  }
 
 for ( int i=0; i < LEDLength; i++)  //set apa102 bright levels
 { 
- maxColor = max( LEDs13[3*i] , LEDs13[3*i+1]);
- 	maxColor = max( maxColor, LEDs13[3*i+2]); 
+ maxColor = VideoBoyMax( LEDs13[3*i] , LEDs13[3*i+1]);
+ 	maxColor = VideoBoyMax( maxColor, LEDs13[3*i+2]); 
 
  	 brightLevel[i] = 1;
 
